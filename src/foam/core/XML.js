@@ -17,7 +17,7 @@ foam.CLASS({
     },
     {
       name: 'toXML',
-      value: function toXML(value, outputter) { return value; }
+      value: function toXML(value, outputer) { return value; }
     }
   ],
 
@@ -120,6 +120,7 @@ foam.CLASS({
   ],
 
   methods: [
+
     function reset() {
       this.indentLevel_ = 0;
       this.buf_ = '';
@@ -290,10 +291,10 @@ foam.CLASS({
           // Nested Objects and FObject Arrays Passed
           for ( var i = 0 ; i < o.length ; i++ ) {
             // Output 'value' tags for arrays containing non-FObject values
-            // TODO: Figure out output tags for XML js
-            if ( !o[i].of ) this.out("<value>");
+            if ( !o[i].cls_ ) this.out("<value>");
             this.output(o[i], this);
-            if ( !o[i].of ) this.out("</value>").nl().indent();
+            if ( !o[i].cls_ ) this.out("</value>");
+            if ( o.length - i != 1 ) this.nl().indent();
           }
         },
         Object: function(o) {
@@ -453,4 +454,3 @@ foam.LIB({
     },
   ]
 });
-
