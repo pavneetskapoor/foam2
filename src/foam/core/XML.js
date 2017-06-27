@@ -330,6 +330,7 @@ foam.CLASS({
       return foam.lookup(objClass).create(propObj);
     },
 
+    // TODO: Nested Obj Setting
     {
       name: 'createFObj',
       code: foam.mmethod({
@@ -357,12 +358,23 @@ foam.CLASS({
               }
               continue;
             }
+            // Nested object
             if ( childName === 'object' ) {
               var nestObj = this.createFObj(prop.firstChild);
               prop.set(obj, nestObj);
               continue;
             }
-            if ( currentProp.firstChild.nodeValue ) prop.set(obj, currentProp.firstChild.nodeValue);
+            // Regular Prop
+            if ( currentProp.firstChild.nodeValue ) {
+              prop.set(obj, currentProp.firstChild.nodeValue);
+            } else if ( currentProp.firstChild.innerHTML ) {
+              var v = currentProp.firstChild.innerHTML;
+              prop.set(obj, prop.of ? foam.lookup(prop.of.id).create({ ordinal: v }) : v )
+            }
+          }
+
+
+            // TODO: Set ENUM ORDINAL VALUE
           }
           return obj;
         },
