@@ -226,7 +226,7 @@ foam.CLASS({
       }
     },
 
-     function outputFunction(o) {
+    function outputFunction(o) {
       if ( this.formatFunctionsAsStrings ) {
         this.output(o.toString());
       } else {
@@ -290,9 +290,10 @@ foam.CLASS({
           // Nested Objects and FObject Arrays Passed
           for ( var i = 0 ; i < o.length ; i++ ) {
             // Output 'value' tags for arrays containing non-FObject values
-            if ( !o[i].of ) this.nl().indent().out("<value>");
+            // TODO: Figure out output tags for XML js
+            if ( !o[i].of ) this.out("<value>");
             this.output(o[i], this);
-            if ( !o[i].of ) this.out("</value>");
+            if ( !o[i].of ) this.out("</value>").nl().indent();
           }
         },
         Object: function(o) {
@@ -330,7 +331,6 @@ foam.CLASS({
       return foam.lookup(objClass).create(propObj);
     },
 
-    // TODO: Nested Obj Setting
     {
       name: 'createFObj',
       code: foam.mmethod({
@@ -341,7 +341,8 @@ foam.CLASS({
           var props = o.children;
 
           // Populate FObject with properties
-          for ( propIndex = 0; propIndex < props.length; propIndex++ ) {
+          for ( var propIndex = 0; propIndex < props.length; propIndex++ ) {
+
             var currentProp = props[propIndex];
             var prop = obj.cls_.getAxiomByName(currentProp.tagName);
             var childName = currentProp.firstChild.localName;
@@ -349,32 +350,31 @@ foam.CLASS({
             if ( currentProp.className === 'Array' ) {
               // Array of FObjects
               if ( childName === 'object' ) {
-                var nestObjArray = Array.from(currentProp.firstChild.childNodes);
+                var nestObjArray = Array.from(currentProp.childNodes);
                 prop.set(obj, this.createFObj(nestObjArray));
               } else {
-                // Array of other objects
+                // Array of other objects with 'value' tag names
                 var arrayValue = (Array.from(currentProp.children)).map( function (x) { return x.innerHTML; });
                 prop.set(obj, arrayValue);
               }
               continue;
             }
-            // Nested object
+
+            // Nested Object
             if ( childName === 'object' ) {
-              var nestObj = this.createFObj(prop.firstChild);
+              var nestObj = this.createFObj(currentProp.firstChild);
               prop.set(obj, nestObj);
               continue;
             }
+
             // Regular Prop
             if ( currentProp.firstChild.nodeValue ) {
-              prop.set(obj, currentProp.firstChild.nodeValue);
+              var val = currentProp.firstChild.nodeValue;
+              prop.set(obj, prop.of ? foam.lookup(prop.of.id).create({ ordinal: val }) : val );
             } else if ( currentProp.firstChild.innerHTML ) {
               var v = currentProp.firstChild.innerHTML;
-              prop.set(obj, prop.of ? foam.lookup(prop.of.id).create({ ordinal: v }) : v )
+              prop.set(obj, prop.of ? foam.lookup(prop.of.id).create({ ordinal: v }) : v );
             }
-          }
-
-
-            // TODO: Set ENUM ORDINAL VALUE
           }
           return obj;
         },
@@ -454,84 +454,3 @@ foam.LIB({
   ]
 });
 
-
-//         var objects = xmlDoc.getElementsByTagName("object");
-//         var fObjects = [];
-
-//         for ( objectIndex = 0; objectIndex < objects.length; objectIndex++ ) {
-//           var className = objects[objectIndex].className;
-//           var props = objects[objectIndex].children;
-//           var obj = foam.lookup(className).create();
-
-//           for ( propIndex = 0; propIndex < props.length; propIndex++ ) {
-//             var currentProp = props[propIndex];
-//             var prop = obj.cls_.getAxiomByName(currentProp.tagName);
-//             if ( currentProp.className === 'Array' ) {
-//               var arrayValue = (Array.from(currentProp.children)).map( function (x) {
-//                   return x.innerHTML;
-//               });
-//               prop.set(obj, arrayValue);
-//               continue;
-//             }
-//             // Check if there is value for currentProp. Otherwise, do not output
-//             if ( currentProp.firstChild ) prop.set(obj, currentProp.firstChild.nodeValue);
-//           }
-//           fObjects.push(obj);
-//         }
-//         return fObjects;
-
-
-// {
-    //   name: 'objectify',
-    //   code: foam.mmethod({
-    //     Date: function(o) {
-    //       return this.formatDatesAsNumbers ? o.valueOf() : o;
-    //     },
-    //     Function: function(o) {
-    //       return this.formatFunctionsAsStrings ? o.toString() : o;
-    //     },
-    //     FObject: function(o) {
-    //       var m = {};
-    //       if ( this.outputClassNames ) {
-    //         m.class = o.cls_.id;
-    //       }
-    //       var ps = o.cls_.getAxiomsByClass(foam.core.Property);
-    //       for ( var i = 0 ; i < ps.length ; i++ ) {
-    //         var p = ps[i];
-    //         if ( ! this.propertyPredicate(o, p) ) continue;
-    //         if ( ! this.outputDefaultValues && p.isDefaultValue(o[p.name]) ) continue;
-
-    //         m[p.name] = this.objectify(p.toXML(o[p.name], this));
-    //       }
-    //       return m;
-    //     },
-    //     Array: function(o) {
-    //       var a = [];
-    //       for ( var i = 0 ; i < o.length ; i++ ) {
-    //         a[i] = this.objectify(o[i]);
-    //       }
-    //       return a;
-    //     },
-    //     Object: function(o) {
-    //       var ret = {};
-    //       for ( var key in o ) {
-    //         // NOTE: Could lazily construct "ret" first time
-    //         // this.objectify(o[key]) !== o[key].
-    //         if ( o.hasOwnProperty(key) ) ret[key] = this.objectify(o[key]);
-    //       }
-    //       return ret;
-    //     }
-    //   },
-    //   function(o) { return o; })
-    // }
-
-    // function unescapeAttr(str) {
-    //   return str && str.replace(/&quot;/g, '"');
-    // },
-
-        // function unescape(str) {
-    //   return str && str.toString()
-    //     .replace(/&lt;/g, '<')
-    //     .replace(/&gt;/g, '>')
-    //     .replace(/&amp;/g, '&');
-    // },
