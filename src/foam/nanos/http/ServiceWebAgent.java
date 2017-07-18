@@ -23,7 +23,6 @@ public class ServiceWebAgent
 
     out.println("<pre>");
 
-    out.println("</pre>")
+    out.println("</pre>");
   }
-
 }
