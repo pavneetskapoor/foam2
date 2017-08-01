@@ -18,11 +18,12 @@ public class ServiceWebAgent
   public ServiceWebAgent() {}
 
   public void execute(X x) {
-    final PrintWriter out  = (PrintWriter) x.get(PrintWriter.class);
-          DAO         dao  = (DAO)         x.get("nSpecDAO");
+    try {
+      X          requestContext = getX().put("httpRequest", req).put("httpResponse", resp);
+    } catch (Throwable t) {
+      System.err.println("Error: " +  t);
+      t.printStackTrace();
+    }
 
-    out.println("<pre>");
-
-    out.println("</pre>");
   }
 }
