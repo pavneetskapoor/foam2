@@ -6,24 +6,35 @@
 
 package foam.nanos.http;
 
+import foam.box.*;
 import foam.core.*;
-import foam.dao.DAO;
-import foam.dao.AbstractSink;
-import foam.nanos.boot.NSpec;
-import java.io.PrintWriter;
+import foam.core.FObject;
+import foam.dao.*;
+import java.io.IOException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class ServiceWebAgent
   implements WebAgent
 {
-  public ServiceWebAgent() {}
+  protected Object service_;
+  protected Box    skeleton_;
+
+  public ServiceWebAgent(Object service, Box skeleton) {
+    service_  = service;
+    skeleton_ = skeleton;
+  }
 
   public void execute(X x) {
+    HttpServletRequest req = (HttpServletRequest)x.get("httpRequest");
+    HttpServletResponse resp = (HttpServletResponse)x.get("httpResponse");
+    ServiceServlet ss = new ServiceServlet(service_, skeleton_);
+    ss.setX(x);
     try {
-      X          requestContext = getX().put("httpRequest", req).put("httpResponse", resp);
-    } catch (Throwable t) {
-      System.err.println("Error: " +  t);
-      t.printStackTrace();
-    }
+      ss.service(req, resp);
+    } catch (ServletException | IOException ex) {
 
+    }
   }
 }
