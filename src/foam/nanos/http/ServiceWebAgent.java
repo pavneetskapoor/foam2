@@ -8,12 +8,11 @@ package foam.nanos.http;
 
 import foam.box.*;
 import foam.core.*;
-import foam.core.FObject;
-import foam.dao.*;
 import java.io.IOException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.ServletException;
 
 public class ServiceWebAgent
   implements WebAgent
